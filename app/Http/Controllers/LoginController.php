@@ -40,31 +40,32 @@ class LoginController extends Controller
         }
 
         if ($user) {
-            // Memeriksa password
             if (Hash::check($request->password, $user->password)) {
-                Auth::login($user); // Login pengguna
+                Auth::login($user);
 
-                // Redirect berdasarkan posisi pengguna
                 if (isset($user->role)) {
+                    // Redirect berdasarkan role dan id
                     if ($user->role === 'operator') {
-                        return response()->json(['message' => 'Anda adalah Operator', 'role' => $user->role]);
+                        return redirect()->route('operator', ['id' => $user->id])
+                            ->with('message', 'Anda adalah Operator');
                     } elseif ($user->role === 'distributor') {
-                        return response()->json(['message' => 'Anda adalah Distributor', 'role' => $user->role]);
-                    } else { // Default untuk User
-                        return response()->json(['message' => 'Anda adalah User', 'role' => $user->role]);
+                        return redirect()->route('distributor', ['id' => $user->id])
+                            ->with('message', 'Anda adalah Distributor');
+                    } else {
+                        return redirect()->route('user', ['id' => $user->id])
+                            ->with('message', 'Anda adalah User');
                     }
                 } else {
                     return response()->json(['error' => 'Role pengguna tidak ditemukan.']);
                 }
             } else {
-                // Jika password salah
                 return back()->withErrors(['password' => 'Password yang diberikan tidak benar.']);
             }
         } else {
-            // Jika tidak ada pengguna ditemukan
             return back()->withErrors(['email' => 'Tidak ada pengguna dengan alamat email ini.']);
         }
     }
+
 
 
     public function logout(Request $request)
